@@ -1,6 +1,14 @@
 # Greg Davis - CIS261 - Week 8 Lab - Rectangle
 
-def area(self):
+class Rectangle:
+    def __init__(self, height, width):
+        self.height = height
+        self.width = width
+
+    def perimeter(self):
+        return 2 * (self.height + self.width)
+
+    def area(self):
         return self.height * self.width
 
     def draw(self):
@@ -38,7 +46,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
 # Greg Davis - CIS261 - Week 8 Lab - DeckofCards
