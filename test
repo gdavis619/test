@@ -1,0 +1,40 @@
+### CIS261 Gregory Davis Rectangle Class
+
+def area(self):
+        return self.height * self.width
+
+    def draw(self):
+        # Top border
+        print("* " * self.width)
+
+        # Middle rows (only borders)
+        for _ in range(self.height - 2):
+            print("* " + "  " * (self.width - 2) + "*")
+
+        # Bottom border (only if height > 1)
+        if self.height > 1:
+            print("* " * self.width)
+
+
+def main():
+    print("Rectangle Calculator\n")
+
+    while True:
+        height = int(input("Height:\t\t"))
+        width = int(input("Width:\t\t"))
+
+        rect = Rectangle(height, width)
+
+        print(f"Perimeter:\t{rect.perimeter()}")
+        print(f"Area:\t\t{rect.area()}")
+
+        rect.draw()
+        print()
+
+        choice = input("Continue? (y/n): ")
+        if choice.lower() != "y":
+            break
+
+
+if __name__ == "__main__":
+    main()
