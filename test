@@ -1,4 +1,4 @@
-### CIS261 Gregory Davis Rectangle Class
+# Greg Davis - CIS261 - Week 8 Lab - Rectangle
 
 def area(self):
         return self.height * self.width
