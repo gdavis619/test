@@ -1,107 +1,188 @@
-# Greg Davis - CIS261 - Week 8 Lab - Rectangle
+from datetime import datetime
 
-class Rectangle:
-    def __init__(self, height, width):
-        self.height = height
-        self.width = width
+USER_FILE = "users.txt"
+EMP_FILE = "employees.txt"
 
-    def perimeter(self):
-        return 2 * (self.height + self.width)
+# Part 1 – User Setup
 
-    def area(self):
-        return self.height * self.width
+def load_user_ids():
+    user_ids = []
+    try:
+        with open(USER_FILE, "a+") as file:
+            file.seek(0)
+            for line in file:
+                user_ids.append(line.strip().split("|")[0])
+    except FileNotFoundError:
+        pass
+    return user_ids
 
-    def draw(self):
-        # Top border
-        print("* " * self.width)
 
-        # Middle rows (only borders)
-        for _ in range(self.height - 2):
-            print("* " + "  " * (self.width - 2) + "*")
+def add_users(user_ids):
+    with open(USER_FILE, "a") as file:
+        while True:
+            user_id = input("Enter User ID (or End to finish): ").strip()
+            if user_id.lower() == "end":
+                break
 
-        # Bottom border (only if height > 1)
-        if self.height > 1:
-            print("* " * self.width)
+            if user_id in user_ids:
+                print("User ID already exists.")
+                continue
 
+            password = input("Enter Password: ").strip()
+            auth = input("Enter Authorization (Admin/User): ").strip()
+
+            if auth not in ("Admin", "User"):
+                print("Authorization must be Admin or User.")
+                continue
+
+            file.write(f"{user_id}|{password}|{auth}\n")
+            user_ids.append(user_id)
+
+
+def display_users():
+    print("\n=== User Login Information ===")
+    try:
+        with open(USER_FILE, "r") as file:
+            for line in file:
+                user_id, password, auth = line.strip().split("|")
+                print(user_id, password, auth)
+    except FileNotFoundError:
+        print("No users found.")
+
+# Part 2 – Login Class
+
+class Login:
+    def __init__(self, user_id, password, authorization):
+        self.user_id = user_id
+        self.password = password
+        self.authorization = authorization
+
+
+def login_process():
+    users = []
+    passwords = []
+    auths = []
+
+    try:
+        with open(USER_FILE, "r") as file:
+            for line in file:
+                uid, pwd, auth = line.strip().split("|")
+                users.append(uid)
+                passwords.append(pwd)
+                auths.append(auth)
+    except FileNotFoundError:
+        print("No user file found.")
+        exit()
+
+    user_id = input("Enter User ID: ").strip()
+    if user_id not in users:
+        print("Invalid user ID.")
+        exit()
+
+    index = users.index(user_id)
+    password = input("Enter Password: ").strip()
+    if password != passwords[index]:
+        print("Invalid password.")
+        exit()
+
+    return Login(user_id, password, auths[index])
+
+# Part 4 Payroll Functions
+
+def get_employee_name():
+    return input("Enter employee name (or End to finish): ").strip()
+
+def get_from_date():
+    return input("Enter From Date (mm/dd/yyyy): ").strip()
+
+def get_to_date():
+    return input("Enter To Date (mm/dd/yyyy): ").strip()
+
+def get_total_hours():
+    return float(input("Enter total hours worked: "))
+
+def get_hourly_rate():
+    return float(input("Enter hourly rate: "))
+
+def get_tax_rate():
+    return float(input("Enter income tax rate (percent): ")) / 100
+
+def calc_pay(hours, rate, tax_rate):
+    gross = hours * rate
+    tax = gross * tax_rate
+    net = gross - tax
+    return gross, tax, net
+
+def display_employee(from_date, to_date, name, hours, rate, gross, tax_rate, tax, net):
+    print("\n--- Employee Payroll ---")
+    print("From:", from_date, "To:", to_date)
+    print("Name:", name)
+    print("Hours:", hours)
+    print("Rate:", rate)
+    print("Gross:", gross)
+    print("Tax Rate:", tax_rate)
+    print("Tax:", tax)
+    print("Net:", net)
+
+def write_record(from_date, to_date, name, hours, rate, tax_rate):
+    with open(EMP_FILE, "a") as file:
+        file.write(f"{from_date}|{to_date}|{name}|{hours}|{rate}|{tax_rate}\n")
+
+def generate_report(login_obj):
+    print("\n=== Logged In User ===")
+    print(login_obj.user_id, login_obj.password, login_obj.authorization)
+
+    emp_count = tot_hours = tot_tax = tot_net = 0
+
+    try:
+        with open(EMP_FILE, "r") as file:
+            for line in file:
+                f, t, name, hours, rate, tax_rate = line.strip().split("|")
+                hours = float(hours)
+                rate = float(rate)
+                tax_rate = float(tax_rate)
+
+                gross, tax, net = calc_pay(hours, rate, tax_rate)
+                display_employee(f, t, name, hours, rate, gross, tax_rate, tax, net)
+
+                emp_count += 1
+                tot_hours += hours
+                tot_tax += tax
+                tot_net += net
+    except FileNotFoundError:
+        print("No payroll records found.")
+        return
+
+    print("\nTotals")
+    print("Employees:", emp_count)
+    print("Hours:", tot_hours)
+    print("Taxes:", tot_tax)
+    print("Net:", tot_net)
+
+# Main Program
 
 def main():
-    print("Rectangle Calculator\n")
+    user_ids = load_user_ids()
+    add_users(user_ids)
+    display_users()
 
-    while True:
-        height = int(input("Height:\t\t"))
-        width = int(input("Width:\t\t"))
+    login_obj = login_process()
 
-        rect = Rectangle(height, width)
+    if login_obj.authorization == "Admin":
+        while True:
+            name = get_employee_name()
+            if name.lower() == "end":
+                break
+            write_record(
+                get_from_date(),
+                get_to_date(),
+                name,
+                get_total_hours(),
+                get_hourly_rate(),
+                get_tax_rate()
+            )
 
-        print(f"Perimeter:\t{rect.perimeter()}")
-        print(f"Area:\t\t{rect.area()}")
-
-        rect.draw()
-        print()
-
-        choice = input("Continue? (y/n): ")
-        if choice.lower() != "y":
-            break
-
-
-if __name__ == "__main__":
-    main()
-
-
-# Greg Davis - CIS261 - Week 8 Lab - DeckofCards
-
-
-import random
-
-class Card:
-    def __init__(self, rank, suit):
-        self.rank = rank
-        self.suit = suit
-
-    def __str__(self):
-        return f"{self.rank} of {self.suit}"
-
-
-class Deck:
-    def __init__(self):
-        ranks = ["Ace", "2", "3", "4", "5", "6", "7",
-                 "8", "9", "10", "Jack", "Queen", "King"]
-        suits = ["Clubs", "Diamonds", "Hearts", "Spades"]
-
-        self.deck = [Card(rank, suit) for suit in suits for rank in ranks]
-
-    def shuffle(self):
-        random.shuffle(self.deck)
-
-    def deal(self, count):
-        hand = []
-        for _ in range(count):
-            if len(self.deck) > 0:
-                hand.append(self.deck.pop(0))
-        return hand
-
-    def cards_left(self):
-        return len(self.deck)
-
-
-def main():
-    print("Card Dealer\n")
-    deck = Deck()
-    deck.shuffle()
-
-    print("I have shuffled a deck of 52 cards.\n")
-
-    num = int(input("How many cards would you like?: "))
-
-    print("\nHere are your cards:")
-    hand = deck.deal(num)
-    for card in hand:
-        print(card)
-
-    print(f"\nThere are {deck.cards_left()} cards left in the deck.\n")
-
-    print("Good luck!")
-    input("Press any key to continue . . . ")
+    generate_report(login_obj)
 
 
 if __name__ == "__main__":
